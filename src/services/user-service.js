@@ -1,5 +1,5 @@
 const UserRepository = require('../repository/user-repository');
-const jws = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const {JWT_KEY} = require('../config/serverConfig');
 const bcrypt = require('bcrypt');
 
@@ -22,7 +22,7 @@ class UserService{
 
     createtToken(user){
         try {
-            const token = jws.sign(user,JWT_KEY,{expiresIn: '1d'});
+            const token = jwt.sign(user,JWT_KEY,{expiresIn: '1d'});
             return token;
         } catch (error) {
             console.log('Something went wrong in token creation');
@@ -32,7 +32,7 @@ class UserService{
 
     verifyToken(token){
         try {
-            const response = jwt.verfiy(token,JWT_KEY);
+            const response = jwt.verify(token,JWT_KEY);
             return response;  //otherwise true will be returned
         } catch (error) { //error will be thrown if there is somwthing wrong in verification
             console.log('Something went wrong in token verication :',error);
@@ -63,6 +63,24 @@ class UserService{
             return newJWT;
         } catch (error) {
             console.log('Something went wrong in sign in process');
+            throw error;
+        }
+    }
+
+    async isAuthenticated(token){
+        try {
+            const response = this.verifyToken(token);
+            if(!response){
+                throw {error : 'Tnvalid Token'};
+            }
+            //{email: " " ,id:" ", isa:" ", esa:" ""} -> response
+            const user = await this.userRepository.getById(response.id);
+            if(!user){
+                throw {error : 'No user with the corresponding toekn exists'};
+            }
+            return user.id;
+        } catch (error) {
+            console.log('Something went wrong in auth process');
             throw error;
         }
     }
