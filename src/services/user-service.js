@@ -42,9 +42,27 @@ class UserService{
 
     checkPassword(userInputPlainPassword , encryptedPassword){
         try {
-            return bcrypt.compareSync(userInputPlainPassword,encryptedPassword);
+            return bcrypt.compareSync(userInputPlainPassword, encryptedPassword);
         } catch (error) {
-            console.log('Something went wrong in Pasword verification');
+            console.log('Something went wrong in Password verification');
+            throw error;
+        }
+    }
+
+    async signIn (email, plainPassword){
+        try {
+            const user = await this.userRepository.getByEmail(email);
+
+            const passwordMatch = this.checkPassword(plainPassword , user.password);
+
+            if(!passwordMatch){
+                console.log(`Password doesn't match`);
+                throw {error : 'incorrect Password'};
+            }
+            const newJWT = this.createtToken({email :user.email ,id: user.id});
+            return newJWT;
+        } catch (error) {
+            console.log('Something went wrong in sign in process');
             throw error;
         }
     }
