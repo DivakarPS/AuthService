@@ -18,7 +18,15 @@ class UserService{
         }
     }
 
-    async destroy(){}
+    async destroy(userId){
+        try {
+            const response = await this.userRepository.destroy(userId);
+            return response;
+        } catch (error) {
+            console.log('Something went wrong in service layer of user');
+            throw error;
+        }
+    }
 
     createtToken(user){
         try {
@@ -76,7 +84,7 @@ class UserService{
             //{email: " " ,id:" ", isa:" ", esa:" ""} -> response
             const user = await this.userRepository.getById(response.id);
             if(!user){
-                throw {error : 'No user with the corresponding toekn exists'};
+                throw {error : 'No user with the corresponding token exists'};
             }
             return user.id;
         } catch (error) {
